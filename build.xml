@@ -10,6 +10,65 @@
 <project name="WFC" default="default" basedir=".">
     <description>Builds, tests, and runs the project WFC.</description>
     <import file="nbproject/build-impl.xml"/>
+
+    <path id="junit.classpath">
+    <fileset dir="lib">
+        <include name="junit-jupiter-api-5.8.2.jar"/>
+        <include name="junit-jupiter-engine-5.8.2.jar"/>
+        <include name="apiguardian-api-1.1.0.jar"/>
+        <include name="opentest4j-1.2.0.jar"/>
+        <include name="junit-platform-commons-1.8.2.jar"/>
+        <include name="junit-platform-engine-1.8.2.jar"/>
+    </fileset>
+</path>
+     
+     <property name="junit5.version" value="5.8.2"/>
+    <property name="junit5.path" location="lib"/>
+
+    <target name="download-junit5">
+        <get src="https://repo1.maven.org/maven2/org/junit/jupiter/junit-jupiter-api/${junit5.version}/junit-jupiter-api-${junit5.version}.jar"
+             dest="${junit5.path}/junit-jupiter-api-${junit5.version}.jar"/>
+        <get src="https://repo1.maven.org/maven2/org/junit/jupiter/junit-jupiter-engine/${junit5.version}/junit-jupiter-engine-${junit5.version}.jar"
+             dest="${junit5.path}/junit-jupiter-engine-${junit5.version}.jar"/>
+        <get src="https://repo1.maven.org/maven2/org/apiguardian/apiguardian-api/1.1.0/apiguardian-api-1.1.0.jar"
+             dest="${junit5.path}/apiguardian-api-1.1.0.jar"/>
+        <get src="https://repo1.maven.org/maven2/org/opentest4j/opentest4j/1.2.0/opentest4j-1.2.0.jar"
+             dest="${junit5.path}/opentest4j-1.2.0.jar"/>
+        <get src="https://repo1.maven.org/maven2/org/junit/platform/junit-platform-commons/1.8.2/junit-platform-commons-1.8.2.jar"
+             dest="${junit5.path}/junit-platform-commons-1.8.2.jar"/>
+        <get src="https://repo1.maven.org/maven2/org/junit/platform/junit-platform-engine/1.8.2/junit-platform-engine-1.8.2.jar"
+             dest="${junit5.path}/junit-platform-engine-1.8.2.jar"/>
+    </target>
+
+    <path id="junit5.classpath">
+        <fileset dir="${junit5.path}" includes="*.jar"/>
+    </path>
+
+    <target name="-pre-compile-test" depends="download-junit5">
+        <property name="build.compiler" value="modern"/>
+        <property name="build.compiler.emacs" value="true"/>
+    </target>
+
+    <target name="-init-macrodef-junit">
+        <macrodef name="junit" uri="http://www.netbeans.org/ns/j2se-project/3">
+            <attribute name="includes"/>
+            <sequential>
+                <junit printsummary="yes" haltonfailure="no" dir="${basedir}">
+                    <classpath>
+                        <path refid="junit5.classpath"/>
+                        <path refid="WFC.classpath"/>
+                    </classpath>
+                    <formatter type="xml"/>
+                    <batchtest todir="${build.test.results.dir}">
+                        <fileset dir="${build.test.classes.dir}" includes="@{includes}"/>
+</batchtest>
+</junit>
+</sequential>
+</macrodef>
+</target>
+<target name="-pre-test-run">
+    <mkdir dir="${build.test.results.dir}"/>
+</target>
     <!--
 
     There exist several targets which are by default empty and which can be 
