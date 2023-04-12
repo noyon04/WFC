@@ -38,14 +38,14 @@ public class ConnectionDBTest {
         Connection result = connectionDB.getConnection();
         assertNotNull(result, "Connection should not be null");
 
-        // Check if the connection is not closed
+       
         try {
             assertFalse(result.isClosed(), "Connection should be open");
         } catch (SQLException e) {
             fail("SQLException occurred: " + e.getMessage());
         }
 
-        // Close the connection
+        // Closing connection
         try {
             result.close();
         } catch (SQLException e) {

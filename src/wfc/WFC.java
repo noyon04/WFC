@@ -46,7 +46,7 @@ public class WFC {
             System.out.println("0. Exit");
             System.out.print("Enter your choice: ");
             choice = scanner.nextInt();
-            scanner.nextLine();  // Consume the newline character
+            scanner.nextLine();  
 
             switch (choice) {
                 case 1:
@@ -110,7 +110,7 @@ public class WFC {
                     if (writeReview != -1) {
                         System.out.print("Enter rating (1-5): ");
                         int rating = scanner.nextInt();
-                        scanner.nextLine();  // Consume the newline character
+                        scanner.nextLine();  
                         System.out.print("Enter your review: ");
                         String reviewText = scanner.nextLine();
                         fitnessClub.writeReview(customerEmail, writeReview, rating, reviewText);
@@ -123,10 +123,10 @@ public class WFC {
                     System.out.println("2. Monthly champion fitness type report");
                     System.out.print("Enter the number: ");
                     int reportType = scanner.nextInt();
-                    scanner.nextLine(); // Consume the newline character
+                    scanner.nextLine(); 
                     System.out.print("Enter the month number (e.g., 03 for March): ");
                     int month = scanner.nextInt();
-                    scanner.nextLine(); // Consume the newline character
+                    scanner.nextLine(); 
                     fitnessClub.generateReports(reportType, month);
                     break;
                 case 0:
@@ -156,7 +156,7 @@ public class WFC {
             }
         } while (dayIndex < 1 || dayIndex > days.length);
 
-        scanner.nextLine(); // Consume the newline character
+        scanner.nextLine(); 
         return days[dayIndex - 1];
     }
 
@@ -176,7 +176,7 @@ public class WFC {
             }
         } while (timeIndex < 1 || timeIndex > times.length);
 
-        scanner.nextLine(); // Consume the newline character
+        scanner.nextLine(); 
         return times[timeIndex - 1];
     }
 
@@ -200,7 +200,7 @@ public class WFC {
             }
         } while (fitnessTypeIndex < 1 || fitnessTypeIndex > fitnessTypes.size());
 
-        scanner.nextLine(); // Consume the newline character
+        scanner.nextLine(); 
         return fitnessTypes.get(fitnessTypeIndex - 1);
     }
 

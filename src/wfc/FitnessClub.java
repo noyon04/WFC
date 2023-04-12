@@ -38,7 +38,7 @@ public class FitnessClub {
 
     }
 
-    // Overloaded constructor that accepts a Connection object
+  
     public FitnessClub(Connection mockConnection) {
         connection = mockConnection;
     }
@@ -81,13 +81,13 @@ public class FitnessClub {
     public void loadDummyDataIfFirstRun() {
         File flagFile = new File("first_run_flag.txt");
 
-        // Check if the flag file exists
+       
         if (!flagFile.exists()) {
             try {
-                // Create the flag file
+               
                 flagFile.createNewFile();
 
-                // Load dummy data
+              // Load dummy data
               insertSampleData();
             } catch (IOException e) {
                 e.printStackTrace();
@@ -97,7 +97,7 @@ public class FitnessClub {
 
     public void insertSampleData() {
         try {
-            // Insert lessons
+            // Inserting lessons
             String[] days = {"Saturday", "Sunday"};
             String[] fitnessTypes = {"SPIN", "YOGA", "BODYSCULPT", "ZUMBA", "CYCLE RACE"};
             LocalTime[] lessonTimes = {LocalTime.of(10, 0), LocalTime.of(12, 0)};
@@ -120,7 +120,7 @@ public class FitnessClub {
                 }
             }
 
-            // Insert customers
+            // Inserting customers
             String[][] customersData = {{"John Smith", "john.smith@example.com"}, {"Jane Doe", "jane.doe@example.com"}, {"Mike Brown", "mike.brown@example.com"}, {"Emma Johnson", "emma.johnson@example.com"}, {"Lisa Wilson", "lisa.wilson@example.com"}, {"Peter Davis", "peter.davis@example.com"}, {"Susan Taylor", "susan.taylor@example.com"}, {"Mark Jones", "mark.jones@example.com"}, {"Karen White", "karen.white@example.com"}, {"Brian Harris", "brian.harris@example.com"}};
             for (String[] customerData : customersData) {
 
@@ -142,20 +142,20 @@ public class FitnessClub {
             Random random = new Random();
             for (int i = 0; i < 100; i++) {
 
-                int customerId = random.nextInt(10) + 1; // Random customer ID between 1 and 10
-                int lessonId = random.nextInt(20) + 1; // Random lesson ID between 1 and 20
-                int rating = random.nextInt(5) + 1; // Random rating between 1 and 5
+                int customerId = random.nextInt(10) + 1; 
+                int lessonId = random.nextInt(20) + 1; 
+                int rating = random.nextInt(5) + 1; 
                 String randomMonthName = randomMonthNameFromLastThreeMonths();
                 String randomStatus = bookingStatuses[random.nextInt(bookingStatuses.length)];
 
-                // Check if booking already exists for the customer and lesson
+                //booking already exists Checking
                 PreparedStatement checkBookingExists = connection.prepareStatement("SELECT * FROM bookings WHERE customer_id = ? AND lesson_id = ?");
                 checkBookingExists.setInt(1, customerId);
                 checkBookingExists.setInt(2, lessonId);
                 ResultSet bookingExistsResult = checkBookingExists.executeQuery();
 
                 if (!bookingExistsResult.next()) {
-                    // Check if there is space available in the lesson
+                   
                     PreparedStatement checkAvailableSlots = connection.prepareStatement("SELECT available_slots FROM lessons WHERE id = ?");
                     checkAvailableSlots.setInt(1, lessonId);
                     ResultSet availableSlotsResult = checkAvailableSlots.executeQuery();
@@ -170,11 +170,11 @@ public class FitnessClub {
                         insertBooking.setString(4, randomStatus);
                         insertBooking.executeUpdate();
 
-                        // Update the available slots for the lesson
+                       
                         PreparedStatement updateAvailableSlots = connection.prepareStatement("UPDATE lessons SET available_slots = available_slots - 1 WHERE id = ?");
                         updateAvailableSlots.setInt(1, lessonId);
                         updateAvailableSlots.executeUpdate();
-                        // Check if review already exists for the customer and lesson
+                       
                         PreparedStatement checkReviewExists = connection.prepareStatement("SELECT * FROM reviews WHERE customer_id = ? AND lesson_id = ?");
                         checkReviewExists.setInt(1, customerId);
                         checkReviewExists.setInt(2, lessonId);
@@ -288,7 +288,7 @@ public class FitnessClub {
 
             System.out.print("Enter the number: ");
             int selectedIndex = scanner.nextInt() - 1;
-            scanner.nextLine();  // Consume the newline character
+            scanner.nextLine(); 
             if (selectedIndex < 0 || selectedIndex > (bookingIds.size() - 1)) {
                 System.out.println("Invalid choice.");
                 return -1;
@@ -375,7 +375,7 @@ public class FitnessClub {
 
     public void bookLesson(String customerEmail, String day, String time, String fitnessType) {
         try {
-            // Find customer by email
+         
             int customerId = findCustomerByEmail(customerEmail);
 
             if (customerId == -1) {
@@ -383,7 +383,7 @@ public class FitnessClub {
                 return;
             }
 
-            // Find lesson by day, time, and fitnessType
+           
             // PreparedStatement findLesson = connection.prepareStatement("SELECT id FROM lessons WHERE lesson_day = ? AND start_time = ? AND fitness_type = ?");
             PreparedStatement findLessonQ = connection.prepareStatement("SELECT id, available_slots FROM lessons WHERE lesson_day = ? AND start_time = ? AND fitness_type = ?");
 
@@ -414,23 +414,23 @@ public class FitnessClub {
                 }
             }
 
-            // Check available slots for the lesson
+           
             if (availableSlots <= 0) {
                 System.out.println("Sorry, there are no available slots for this lesson.");
                 return;
             }
 
-            // Get the current month
+            
             String currentMonth = LocalDate.now().getMonth().name();
 
-            // Book the lesson
+            
             PreparedStatement bookLesson = connection.prepareStatement("INSERT INTO bookings (customer_id, lesson_id, booking_month) VALUES (?, ?, ?)");
             bookLesson.setInt(1, customerId);
             bookLesson.setInt(2, lessonId);
             bookLesson.setString(3, currentMonth);
             bookLesson.executeUpdate();
 
-            // Update the available slots
+            
             PreparedStatement updateAvailableSlots = connection.prepareStatement("UPDATE lessons SET available_slots = available_slots - 1 WHERE id = ?");
             updateAvailableSlots.setInt(1, lessonId);
             updateAvailableSlots.executeUpdate();
@@ -464,7 +464,7 @@ public class FitnessClub {
 
         updateBookingStatus(bookingToCancel, "cancelled");
         try {
-            // Update the available slots
+          
             PreparedStatement updateAvailableSlots = connection.prepareStatement("UPDATE lessons SET available_slots = available_slots + 1 WHERE id = ?");
             updateAvailableSlots.setInt(1, bookingToCancel);
             updateAvailableSlots.executeUpdate();
@@ -484,7 +484,7 @@ public class FitnessClub {
                 return;
             }
 
-            // Find new lesson by newDay, newTime, and newFitnessType
+            
             int newLessonId = findLesson(newDay, newTime, newFitnessType);
 
             if (newLessonId == -1) {
@@ -492,7 +492,7 @@ public class FitnessClub {
                 return;
             }
 
-            // Check if the new lesson is already booked or not
+            
             ResultSet existingBookingResult = checkBooking(customerId, newLessonId);
 
             if (existingBookingResult.next()) {
@@ -503,14 +503,14 @@ public class FitnessClub {
                 }
             }
 
-            // Update the old booking status to 'changed'
+            
             updateBookingStatus(oldBookingToChange, "changed");
-            // Update the available slots
+           
             PreparedStatement updateAvailableSlots = connection.prepareStatement("UPDATE lessons SET available_slots = available_slots + 1 WHERE id = ?");
             updateAvailableSlots.setInt(1, oldBookingToChange);
             updateAvailableSlots.executeUpdate();
 
-            // Update the new booking status to 'booked'
+            
             PreparedStatement updateNewBookingStatus = connection.prepareStatement("INSERT INTO bookings (customer_id, lesson_id, booking_month, status) VALUES (?, ?, ?, 'booked')");
             updateNewBookingStatus.setInt(1, customerId);
             updateNewBookingStatus.setInt(2, newLessonId);
