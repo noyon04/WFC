@@ -38,7 +38,6 @@ public class FitnessClub {
 
     }
 
-  
     public FitnessClub(Connection mockConnection) {
         connection = mockConnection;
     }
@@ -81,18 +80,44 @@ public class FitnessClub {
     public void loadDummyDataIfFirstRun() {
         File flagFile = new File("first_run_flag.txt");
 
-       
         if (!flagFile.exists()) {
             try {
-               
-                flagFile.createNewFile();
+                boolean areTablesEmpty = areBookingAndCustomerTablesEmpty();
 
-              // Load dummy data
-              insertSampleData();
+               
+                if (areTablesEmpty) {
+                    insertSampleData();
+                }
+
+                
+                flagFile.createNewFile();
+                
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
+    }
+
+    private boolean areBookingAndCustomerTablesEmpty() {
+        boolean isEmpty = true;
+        try {
+            PreparedStatement bookingCountQuery = connection.prepareStatement("SELECT COUNT(*) as row_count FROM bookings");
+            ResultSet bookingResultSet = bookingCountQuery.executeQuery();
+            
+            PreparedStatement customerCountQuery = connection.prepareStatement("SELECT COUNT(*) as row_count FROM customers");
+            ResultSet customerResultSet = customerCountQuery.executeQuery();
+            
+            if (bookingResultSet.next() && customerResultSet.next()) {
+                int bookingRowCount = bookingResultSet.getInt("row_count");
+                int customerRowCount = customerResultSet.getInt("row_count");
+                if (bookingRowCount > 0 || customerRowCount > 0) {
+                    isEmpty = false;
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return isEmpty;
     }
 
     public void insertSampleData() {
@@ -142,9 +167,9 @@ public class FitnessClub {
             Random random = new Random();
             for (int i = 0; i < 100; i++) {
 
-                int customerId = random.nextInt(10) + 1; 
-                int lessonId = random.nextInt(20) + 1; 
-                int rating = random.nextInt(5) + 1; 
+                int customerId = random.nextInt(10) + 1;
+                int lessonId = random.nextInt(20) + 1;
+                int rating = random.nextInt(5) + 1;
                 String randomMonthName = randomMonthNameFromLastThreeMonths();
                 String randomStatus = bookingStatuses[random.nextInt(bookingStatuses.length)];
 
@@ -155,7 +180,7 @@ public class FitnessClub {
                 ResultSet bookingExistsResult = checkBookingExists.executeQuery();
 
                 if (!bookingExistsResult.next()) {
-                   
+
                     PreparedStatement checkAvailableSlots = connection.prepareStatement("SELECT available_slots FROM lessons WHERE id = ?");
                     checkAvailableSlots.setInt(1, lessonId);
                     ResultSet availableSlotsResult = checkAvailableSlots.executeQuery();
@@ -170,11 +195,10 @@ public class FitnessClub {
                         insertBooking.setString(4, randomStatus);
                         insertBooking.executeUpdate();
 
-                       
                         PreparedStatement updateAvailableSlots = connection.prepareStatement("UPDATE lessons SET available_slots = available_slots - 1 WHERE id = ?");
                         updateAvailableSlots.setInt(1, lessonId);
                         updateAvailableSlots.executeUpdate();
-                       
+
                         PreparedStatement checkReviewExists = connection.prepareStatement("SELECT * FROM reviews WHERE customer_id = ? AND lesson_id = ?");
                         checkReviewExists.setInt(1, customerId);
                         checkReviewExists.setInt(2, lessonId);
@@ -288,7 +312,7 @@ public class FitnessClub {
 
             System.out.print("Enter the number: ");
             int selectedIndex = scanner.nextInt() - 1;
-            scanner.nextLine(); 
+            scanner.nextLine();
             if (selectedIndex < 0 || selectedIndex > (bookingIds.size() - 1)) {
                 System.out.println("Invalid choice.");
                 return -1;
@@ -375,7 +399,7 @@ public class FitnessClub {
 
     public void bookLesson(String customerEmail, String day, String time, String fitnessType) {
         try {
-         
+
             int customerId = findCustomerByEmail(customerEmail);
 
             if (customerId == -1) {
@@ -383,7 +407,6 @@ public class FitnessClub {
                 return;
             }
 
-           
             // PreparedStatement findLesson = connection.prepareStatement("SELECT id FROM lessons WHERE lesson_day = ? AND start_time = ? AND fitness_type = ?");
             PreparedStatement findLessonQ = connection.prepareStatement("SELECT id, available_slots FROM lessons WHERE lesson_day = ? AND start_time = ? AND fitness_type = ?");
 
@@ -414,23 +437,19 @@ public class FitnessClub {
                 }
             }
 
-           
             if (availableSlots <= 0) {
                 System.out.println("Sorry, there are no available slots for this lesson.");
                 return;
             }
 
-            
             String currentMonth = LocalDate.now().getMonth().name();
 
-            
             PreparedStatement bookLesson = connection.prepareStatement("INSERT INTO bookings (customer_id, lesson_id, booking_month) VALUES (?, ?, ?)");
             bookLesson.setInt(1, customerId);
             bookLesson.setInt(2, lessonId);
             bookLesson.setString(3, currentMonth);
             bookLesson.executeUpdate();
 
-            
             PreparedStatement updateAvailableSlots = connection.prepareStatement("UPDATE lessons SET available_slots = available_slots - 1 WHERE id = ?");
             updateAvailableSlots.setInt(1, lessonId);
             updateAvailableSlots.executeUpdate();
@@ -464,7 +483,7 @@ public class FitnessClub {
 
         updateBookingStatus(bookingToCancel, "cancelled");
         try {
-          
+
             PreparedStatement updateAvailableSlots = connection.prepareStatement("UPDATE lessons SET available_slots = available_slots + 1 WHERE id = ?");
             updateAvailableSlots.setInt(1, bookingToCancel);
             updateAvailableSlots.executeUpdate();
@@ -484,7 +503,6 @@ public class FitnessClub {
                 return;
             }
 
-            
             int newLessonId = findLesson(newDay, newTime, newFitnessType);
 
             if (newLessonId == -1) {
@@ -492,7 +510,6 @@ public class FitnessClub {
                 return;
             }
 
-            
             ResultSet existingBookingResult = checkBooking(customerId, newLessonId);
 
             if (existingBookingResult.next()) {
@@ -503,14 +520,12 @@ public class FitnessClub {
                 }
             }
 
-            
             updateBookingStatus(oldBookingToChange, "changed");
-           
+
             PreparedStatement updateAvailableSlots = connection.prepareStatement("UPDATE lessons SET available_slots = available_slots + 1 WHERE id = ?");
             updateAvailableSlots.setInt(1, oldBookingToChange);
             updateAvailableSlots.executeUpdate();
 
-            
             PreparedStatement updateNewBookingStatus = connection.prepareStatement("INSERT INTO bookings (customer_id, lesson_id, booking_month, status) VALUES (?, ?, ?, 'booked')");
             updateNewBookingStatus.setInt(1, customerId);
             updateNewBookingStatus.setInt(2, newLessonId);
