@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.mockito.Mockito.*;
+
 /**
  *
  * @author Hamiduzzaman Noyon
@@ -79,34 +80,28 @@ public class FitnessClubTest {
         System.out.println("insertSampleData");
         FitnessClub instance = new FitnessClub();
 
-        
         clearTables(instance);
 
-       
         instance.insertSampleData();
 
-       
         try {
-          
+
             Statement stmt = db.getConnection().createStatement();
             ResultSet rs = stmt.executeQuery("SELECT COUNT(*) FROM lessons");
             rs.next();
             int lessonCount = rs.getInt(1);
             assertTrue(lessonCount > 0, "Lessons were not inserted");
 
-            
             rs = stmt.executeQuery("SELECT COUNT(*) FROM customers");
             rs.next();
             int customerCount = rs.getInt(1);
             assertTrue(customerCount > 0, "Customers were not inserted");
 
-           
             rs = stmt.executeQuery("SELECT COUNT(*) FROM bookings");
             rs.next();
             int bookingCount = rs.getInt(1);
             assertTrue(bookingCount > 0, "Bookings were not inserted");
 
-            
             rs = stmt.executeQuery("SELECT COUNT(*) FROM reviews");
             rs.next();
             int reviewCount = rs.getInt(1);
@@ -137,31 +132,49 @@ public class FitnessClubTest {
 
         FitnessClub instance = new FitnessClub();
 
-      
         instance.insertSampleData();
 
-        
         String customerEmail = "john.smith@example.com";
         String status = "attended";
-        int expectedResult = 0; 
+        int expectedResult = 0;
 
-        
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         PrintStream originalOut = System.out;
         System.setOut(new PrintStream(outputStream));
 
         int result = instance.listBookingsForCustomer(customerEmail, status);
 
-       
         System.setOut(originalOut);
 
-        
         assertEquals(expectedResult, result, "The returned booking count is incorrect.");
 
-       
         customerEmail = "non.existent@example.com";
         int nonExistentCustomerResult = instance.listBookingsForCustomer(customerEmail, status);
         assertEquals(-1, nonExistentCustomerResult, "The method should return -1 for a non-existent customer.");
+    }
+
+    /**
+     * Test of getAllCustomers method, of class FitnessClub.
+     */
+
+    @Test
+    public void testGetAllCustomers() {
+        // Create an instance of FitnessClub
+        FitnessClub instance = new FitnessClub();
+
+        // Call the getAllCustomers method
+        List<Customer> customers = instance.getAllCustomers();
+
+        // Check if the list is not null
+        assertNotNull(customers);
+
+        // Iterate through the list of customers and check if the name and email are not empty
+        for (Customer customer : customers) {
+            assertNotNull(customer.getName());
+            assertFalse(customer.getName().isEmpty());
+            assertNotNull(customer.getEmail());
+            assertFalse(customer.getEmail().isEmpty());
+        }
     }
 
     /**
@@ -173,28 +186,22 @@ public class FitnessClubTest {
 
         FitnessClub instance = new FitnessClub();
 
-        
         instance.insertSampleData();
 
-       
         String customerEmail = "john.smith@example.com";
         String status = "attended";
-        int expectedResult = 0; 
+        int expectedResult = 0;
 
-       
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         PrintStream originalOut = System.out;
         System.setOut(new PrintStream(outputStream));
 
         int result = instance.listBookingsForWriteReview(customerEmail, status);
 
-        
         System.setOut(originalOut);
 
-        
         assertEquals(expectedResult, result, "The returned booking count is incorrect.");
 
-        
         customerEmail = "non.existent@example.com";
         int nonExistentCustomerResult = instance.listBookingsForWriteReview(customerEmail, status);
         assertEquals(-1, nonExistentCustomerResult, "The method should return -1 for a non-existent customer.");
@@ -209,24 +216,19 @@ public class FitnessClubTest {
 
         FitnessClub instance = new FitnessClub();
 
-        
         Customer newCustomer = new Customer("New Customer", "new.customer@example.com");
 
-        
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         PrintStream originalOut = System.out;
         System.setOut(new PrintStream(outputStream));
 
         instance.addCustomer(newCustomer);
 
-        
         System.setOut(originalOut);
 
-        
         String expectedResult = "Successfull added" + System.lineSeparator();
         assertEquals(expectedResult, outputStream.toString(), "Adding a new customer should print the expected output.");
 
-      
         try {
             PreparedStatement checkCustomer = db.getConnection().prepareStatement("SELECT COUNT(*) FROM customers WHERE name = ? AND email = ?");
             checkCustomer.setString(1, newCustomer.getName());
@@ -240,19 +242,15 @@ public class FitnessClubTest {
             fail("SQLException occurred while checking the customer in the database.");
         }
 
-      
         Customer existingCustomer = new Customer("John Smith", "john.smith@example.com");
 
-        
         outputStream.reset();
         System.setOut(new PrintStream(outputStream));
 
         instance.addCustomer(existingCustomer);
 
-        
         System.setOut(originalOut);
 
-        
         expectedResult = "Name already exists: " + existingCustomer.getName() + System.lineSeparator();
         assertEquals(expectedResult, outputStream.toString(), "Adding an existing customer should print the expected output.");
     }
@@ -266,21 +264,18 @@ public class FitnessClubTest {
 
         FitnessClub instance = new FitnessClub();
 
-       
         String[] filters = {"Saturday", "Sunday", "Yoga"};
 
         for (String filter : filters) {
-            
+
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
             PrintStream originalOut = System.out;
             System.setOut(new PrintStream(outputStream));
 
             instance.displayTimetable(filter);
 
-            
             System.setOut(originalOut);
 
-            
             List<String> expectedOutput = new ArrayList<>();
 
             try {
@@ -315,133 +310,112 @@ public class FitnessClubTest {
     /**
      * Test of bookLesson method, of class FitnessClub.
      */
-   @Test
-public void testBookLesson() {
-    System.out.println("bookLesson");
+    @Test
+    public void testBookLesson() {
+        System.out.println("bookLesson");
 
-    FitnessClub instance = new FitnessClub();
+        FitnessClub instance = new FitnessClub();
 
-    String customerEmail = "test@example.com";
-    String day = "Saturday";
-    String time = "10:00:00";
-    String fitnessType = "Yoga";
+        String customerEmail = "test@example.com";
+        String day = "Saturday";
+        String time = "10:00:00";
+        String fitnessType = "Yoga";
 
-    
-    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-    PrintStream originalOut = System.out;
-    System.setOut(new PrintStream(outputStream));
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        PrintStream originalOut = System.out;
+        System.setOut(new PrintStream(outputStream));
 
-    instance.bookLesson(customerEmail, day, time, fitnessType);
+        instance.bookLesson(customerEmail, day, time, fitnessType);
 
-    
-    System.setOut(originalOut);
+        System.setOut(originalOut);
 
-    
-    assertTrue(outputStream.toString().contains("Booking successful!"), "Booking should be successful");
+        assertTrue(outputStream.toString().contains("Booking successful!"), "Booking should be successful");
 
-    
-    try {
-        int customerId = instance.getCustomerIdByEmail(customerEmail);
+        try {
+            int customerId = instance.getCustomerIdByEmail(customerEmail);
 
-        PreparedStatement findLesson = db.getConnection().prepareStatement("SELECT id, available_slots FROM lessons WHERE lesson_day = ? AND start_time = ? AND fitness_type = ?");
-        findLesson.setString(1, day);
-        findLesson.setString(2, time);
-        findLesson.setString(3, fitnessType);
-        ResultSet lessonResult = findLesson.executeQuery();
+            PreparedStatement findLesson = db.getConnection().prepareStatement("SELECT id, available_slots FROM lessons WHERE lesson_day = ? AND start_time = ? AND fitness_type = ?");
+            findLesson.setString(1, day);
+            findLesson.setString(2, time);
+            findLesson.setString(3, fitnessType);
+            ResultSet lessonResult = findLesson.executeQuery();
 
-        if (!lessonResult.next()) {
-            fail("Lesson not found.");
+            if (!lessonResult.next()) {
+                fail("Lesson not found.");
+            }
+
+            int lessonId = lessonResult.getInt("id");
+            int availableSlots = lessonResult.getInt("available_slots");
+
+            PreparedStatement checkBooking = db.getConnection().prepareStatement("SELECT * FROM bookings WHERE customer_id = ? AND lesson_id = ?");
+            checkBooking.setInt(1, customerId);
+            checkBooking.setInt(2, lessonId);
+            ResultSet bookingResult = checkBooking.executeQuery();
+
+            assertTrue(bookingResult.next(), "Booking should be present in the database");
+
+            assertEquals(availableSlots - 1, bookingResult.getInt("available_slots"), "Available slots should be updated");
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            fail("SQLException occurred while checking the booking");
         }
-
-        int lessonId = lessonResult.getInt("id");
-        int availableSlots = lessonResult.getInt("available_slots");
-
-        
-        PreparedStatement checkBooking = db.getConnection().prepareStatement("SELECT * FROM bookings WHERE customer_id = ? AND lesson_id = ?");
-        checkBooking.setInt(1, customerId);
-        checkBooking.setInt(2, lessonId);
-        ResultSet bookingResult = checkBooking.executeQuery();
-
-        assertTrue(bookingResult.next(), "Booking should be present in the database");
-
-        
-        assertEquals(availableSlots - 1, bookingResult.getInt("available_slots"), "Available slots should be updated");
-
-    } catch (SQLException e) {
-        e.printStackTrace();
-        fail("SQLException occurred while checking the booking");
     }
-}
 
     /**
      * Test of attendLesson method, of class FitnessClub.
      */
-   @Test
-public void testAttendLesson() throws SQLException {
-    System.out.println("attendLesson");
+    @Test
+    public void testAttendLesson() throws SQLException {
+        System.out.println("attendLesson");
 
-    
-    Connection mockConnection = mock(Connection.class);
-    PreparedStatement mockPreparedStatement = mock(PreparedStatement.class);
+        Connection mockConnection = mock(Connection.class);
+        PreparedStatement mockPreparedStatement = mock(PreparedStatement.class);
 
-   
-    when(mockConnection.prepareStatement(any(String.class))).thenReturn(mockPreparedStatement);
+        when(mockConnection.prepareStatement(any(String.class))).thenReturn(mockPreparedStatement);
 
-    
-    ResultSet mockResultSet = mock(ResultSet.class);
-    when(mockPreparedStatement.executeQuery()).thenReturn(mockResultSet);
+        ResultSet mockResultSet = mock(ResultSet.class);
+        when(mockPreparedStatement.executeQuery()).thenReturn(mockResultSet);
 
-    
-    FitnessClub instance = new FitnessClub(mockConnection);
+        FitnessClub instance = new FitnessClub(mockConnection);
 
-    
-    String customerEmail = "test@example.com";
-    int bookingToAttend = 1;
+        String customerEmail = "test@example.com";
+        int bookingToAttend = 1;
 
-    
-    instance.attendLesson(customerEmail, bookingToAttend);
+        instance.attendLesson(customerEmail, bookingToAttend);
 
-   
-    verify(mockConnection).prepareStatement("UPDATE bookings SET status = ? WHERE id = ?");
-    verify(mockPreparedStatement).setString(1, "attended");
-    verify(mockPreparedStatement).setInt(2, bookingToAttend);
+        verify(mockConnection).prepareStatement("UPDATE bookings SET status = ? WHERE id = ?");
+        verify(mockPreparedStatement).setString(1, "attended");
+        verify(mockPreparedStatement).setInt(2, bookingToAttend);
 
-    
-    verify(mockPreparedStatement).executeUpdate();
-}
+        verify(mockPreparedStatement).executeUpdate();
+    }
 
     /**
      * Test of cancelBooking method, of class FitnessClub.
      */
-      @Test
+    @Test
     public void testCancelBooking() throws SQLException {
         System.out.println("cancelBooking");
         String customerEmail = "test@example.com";
         int bookingToCancel = 1;
 
-        
         Connection mockConnection = mock(Connection.class);
         PreparedStatement mockPreparedStatement = mock(PreparedStatement.class);
 
-        
         when(mockConnection.prepareStatement(any(String.class))).thenReturn(mockPreparedStatement);
 
-        
         FitnessClub instance = new FitnessClub(mockConnection);
 
-        
         instance.cancelBooking(customerEmail, bookingToCancel);
 
-        
         verify(mockPreparedStatement, times(1)).executeUpdate();
 
-        
     }
 
     /**
      * Test of changeLesson method, of class FitnessClub.
      */
-    
     @Test
     public void testChangeLesson() throws SQLException {
         System.out.println("changeLesson");
@@ -451,32 +425,26 @@ public void testAttendLesson() throws SQLException {
         String newTime = "10:00";
         String newFitnessType = "Yoga";
 
-        
         Connection mockConnection = mock(Connection.class);
-        PreparedStatement mockPreparedStatement =mock(PreparedStatement.class);
+        PreparedStatement mockPreparedStatement = mock(PreparedStatement.class);
         ResultSet mockResultSet = mock(ResultSet.class);
 
-        
         when(mockConnection.prepareStatement(any(String.class))).thenReturn(mockPreparedStatement);
         when(mockPreparedStatement.executeQuery()).thenReturn(mockResultSet);
         when(mockResultSet.next()).thenReturn(false);
 
-        
         FitnessClub instance = new FitnessClub(mockConnection);
 
-        
         instance.changeLesson(customerEmail, oldBookingToChange, newDay, newTime, newFitnessType);
 
-       
         verify(mockPreparedStatement, times(4)).executeUpdate();
 
-       
     }
 
     /**
      * Test of writeReview method, of class FitnessClub.
      */
-     @Test
+    @Test
     public void testWriteReview() throws SQLException {
         System.out.println("writeReview");
         String customerEmail = "test@example.com";
@@ -484,23 +452,18 @@ public void testAttendLesson() throws SQLException {
         int rating = 5;
         String review = "Great lesson!";
 
-        
         Connection mockConnection = mock(Connection.class);
         PreparedStatement mockPreparedStatement = mock(PreparedStatement.class);
         ResultSet mockResultSet = mock(ResultSet.class);
 
-        
         when(mockConnection.prepareStatement(any(String.class))).thenReturn(mockPreparedStatement);
         when(mockPreparedStatement.executeQuery()).thenReturn(mockResultSet);
         when(mockResultSet.next()).thenReturn(false);
 
-        
         FitnessClub instance = new FitnessClub(mockConnection);
 
-        
         instance.writeReview(customerEmail, lessonId, rating, review);
 
-        
         verify(mockPreparedStatement, times(1)).executeUpdate();
 
     }
@@ -514,49 +477,38 @@ public void testAttendLesson() throws SQLException {
         int reportType = 1;
         int month = 1;
 
-        
         Connection mockConnection = mock(Connection.class);
 
-        
         FitnessClub instance = new FitnessClub(mockConnection);
 
-        
         FitnessClub spyInstance = spy(instance);
 
-        
         spyInstance.generateReports(reportType, month);
         String monthName = Month.of(month).name();
-        
+
         verify(spyInstance, times(1)).generateMonthlyLessonReport(monthName);
     }
 
     /**
      * Test of generateMonthlyLessonReport method, of class FitnessClub.
      */
-   @Test
+    @Test
     public void testGenerateMonthlyLessonReport() throws SQLException {
         System.out.println("generateMonthlyLessonReport");
         String monthName = "JANUARY";
 
-        
         Connection mockConnection = mock(Connection.class);
 
-       
         FitnessClub instance = new FitnessClub(mockConnection);
 
-        
         PreparedStatement mockPreparedStatement = mock(PreparedStatement.class);
 
-        
         ResultSet mockResultSet = mock(ResultSet.class);
 
-        
         when(mockConnection.prepareStatement(anyString())).thenReturn(mockPreparedStatement);
 
-        
         when(mockPreparedStatement.executeQuery()).thenReturn(mockResultSet);
 
-        
         when(mockResultSet.next()).thenReturn(true, false);
         when(mockResultSet.getString("lesson_day")).thenReturn("Monday");
         when(mockResultSet.getString("start_time")).thenReturn("10:00");
@@ -564,49 +516,40 @@ public void testAttendLesson() throws SQLException {
         when(mockResultSet.getInt("booking_count")).thenReturn(5);
         when(mockResultSet.getDouble("avg_rating")).thenReturn(4.2);
 
-        
         instance.generateMonthlyLessonReport(monthName);
 
-        
         verify(mockConnection, times(1)).prepareStatement(anyString());
         verify(mockPreparedStatement, times(1)).setString(1, monthName);
         verify(mockPreparedStatement, times(1)).executeQuery();
         verify(mockResultSet, times(2)).next();
     }
+
     /**
      * Test of generateMonthlyChampionFitnessTypeReport method, of class
      * FitnessClub.
      */
-     @Test
+    @Test
     public void testGenerateMonthlyChampionFitnessTypeReport() throws SQLException {
         System.out.println("generateMonthlyChampionFitnessTypeReport");
         String monthName = "JANUARY";
 
-        
         Connection mockConnection = mock(Connection.class);
 
-       
         FitnessClub instance = new FitnessClub(mockConnection);
 
-       
         PreparedStatement mockPreparedStatement = mock(PreparedStatement.class);
 
-        
         ResultSet mockResultSet = mock(ResultSet.class);
 
-        
         when(mockConnection.prepareStatement(anyString())).thenReturn(mockPreparedStatement);
 
-        
         when(mockPreparedStatement.executeQuery()).thenReturn(mockResultSet);
 
-        
         when(mockResultSet.next()).thenReturn(true, false);
         when(mockResultSet.getString("fitness_type")).thenReturn("Yoga");
         when(mockResultSet.getInt("booking_count")).thenReturn(10);
         when(mockResultSet.getDouble("total_income")).thenReturn(500.0);
 
-        
         instance.generateMonthlyChampionFitnessTypeReport(monthName);
 
         // Verify the interactions

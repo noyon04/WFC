@@ -43,6 +43,7 @@ public class WFC {
             System.out.println("7. Change a lesson");
             System.out.println("8. Write a review");
             System.out.println("9. Generate reports");
+            System.out.println("10. All Customers");
             System.out.println("0. Exit");
             System.out.print("Enter your choice: ");
             choice = scanner.nextInt();
@@ -129,9 +130,13 @@ public class WFC {
                     scanner.nextLine(); 
                     fitnessClub.generateReports(reportType, month);
                     break;
+                case 10:
+                    fitnessClub.printAllCustomers();
+                    break;
                 case 0:
                     System.out.println("Thank you for using the Weekend Fitness Club booking system!");
                     break;
+
                 default:
                     System.out.println("Invalid choice. Please try again.");
             }

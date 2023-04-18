@@ -84,14 +84,12 @@ public class FitnessClub {
             try {
                 boolean areTablesEmpty = areBookingAndCustomerTablesEmpty();
 
-               
                 if (areTablesEmpty) {
                     insertSampleData();
                 }
 
-                
                 flagFile.createNewFile();
-                
+
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -103,10 +101,10 @@ public class FitnessClub {
         try {
             PreparedStatement bookingCountQuery = connection.prepareStatement("SELECT COUNT(*) as row_count FROM bookings");
             ResultSet bookingResultSet = bookingCountQuery.executeQuery();
-            
+
             PreparedStatement customerCountQuery = connection.prepareStatement("SELECT COUNT(*) as row_count FROM customers");
             ResultSet customerResultSet = customerCountQuery.executeQuery();
-            
+
             if (bookingResultSet.next() && customerResultSet.next()) {
                 int bookingRowCount = bookingResultSet.getInt("row_count");
                 int customerRowCount = customerResultSet.getInt("row_count");
@@ -194,26 +192,30 @@ public class FitnessClub {
                         insertBooking.setString(3, randomMonthName);
                         insertBooking.setString(4, randomStatus);
                         insertBooking.executeUpdate();
+                        if (randomStatus.equals(bookingStatuses[0]) || randomStatus.equals(bookingStatuses[1])) { //// if user booked the lesson or attended
+                            PreparedStatement updateAvailableSlots = connection.prepareStatement("UPDATE lessons SET available_slots = available_slots - 1 WHERE id = ?");
+                            updateAvailableSlots.setInt(1, lessonId);
+                            updateAvailableSlots.executeUpdate();
 
-                        PreparedStatement updateAvailableSlots = connection.prepareStatement("UPDATE lessons SET available_slots = available_slots - 1 WHERE id = ?");
-                        updateAvailableSlots.setInt(1, lessonId);
-                        updateAvailableSlots.executeUpdate();
-
-                        PreparedStatement checkReviewExists = connection.prepareStatement("SELECT * FROM reviews WHERE customer_id = ? AND lesson_id = ?");
-                        checkReviewExists.setInt(1, customerId);
-                        checkReviewExists.setInt(2, lessonId);
-                        ResultSet reviewExistsResult = checkReviewExists.executeQuery();
-                        if (!reviewExistsResult.next()) {
-                            String randomReview = sampleReviews[random.nextInt(sampleReviews.length)];
-
-                            PreparedStatement insertReview = connection.prepareStatement("INSERT INTO reviews (customer_id, lesson_id, rating, review_text, booking_month) VALUES (?, ?, ?, ?, ?)");
-                            insertReview.setInt(1, customerId);
-                            insertReview.setInt(2, lessonId);
-                            insertReview.setInt(3, rating);
-                            insertReview.setString(4, randomReview);
-                            insertReview.setString(5, randomMonthName);
-                            insertReview.executeUpdate();
                         }
+                        if (randomStatus.equals(bookingStatuses[1])) { //// if user attended the lesson
+                            PreparedStatement checkReviewExists = connection.prepareStatement("SELECT * FROM reviews WHERE customer_id = ? AND lesson_id = ?");
+                            checkReviewExists.setInt(1, customerId);
+                            checkReviewExists.setInt(2, lessonId);
+                            ResultSet reviewExistsResult = checkReviewExists.executeQuery();
+                            if (!reviewExistsResult.next()) {
+                                String randomReview = sampleReviews[random.nextInt(sampleReviews.length)];
+
+                                PreparedStatement insertReview = connection.prepareStatement("INSERT INTO reviews (customer_id, lesson_id, rating, review_text, booking_month) VALUES (?, ?, ?, ?, ?)");
+                                insertReview.setInt(1, customerId);
+                                insertReview.setInt(2, lessonId);
+                                insertReview.setInt(3, rating);
+                                insertReview.setString(4, randomReview);
+                                insertReview.setString(5, randomMonthName);
+                                insertReview.executeUpdate();
+                            }
+                        }
+
                     }
                 }
             }
@@ -274,6 +276,36 @@ public class FitnessClub {
         return -1;
     }
 
+    public void printAllCustomers() {
+        List<Customer> customers = getAllCustomers();
+
+        System.out.println("All Customers:");
+        System.out.println("Name\t\t\tEmail");
+
+        for (Customer customer : customers) {
+            System.out.printf("%s\t\t%s%n", customer.getName(), customer.getEmail());
+        }
+    }
+
+    public List<Customer> getAllCustomers() {
+        List<Customer> customers = new ArrayList<>();
+
+        try {
+            PreparedStatement getAllCustomers = connection.prepareStatement("SELECT name, email FROM customers");
+            ResultSet resultSet = getAllCustomers.executeQuery();
+
+            while (resultSet.next()) {
+                String name = resultSet.getString("name");
+                String email = resultSet.getString("email");
+                customers.add(new Customer(name, email));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return customers;
+    }
+
     public int listBookingsForWriteReview(String customerEmail, String status) {
         try {
             int customerId = findCustomerByEmail(customerEmail);
@@ -284,7 +316,7 @@ public class FitnessClub {
             }
 
             PreparedStatement listBookings = connection.prepareStatement(
-                    "SELECT b.id, l.lesson_day, l.start_time, l.fitness_type "
+                    "SELECT l.id, l.lesson_day, l.start_time, l.fitness_type "
                     + "FROM bookings b JOIN lessons l ON b.lesson_id = l.id "
                     + "WHERE b.customer_id = ? AND b.status = ? AND NOT EXISTS (SELECT * FROM reviews r WHERE r.customer_id = b.customer_id AND r.lesson_id = b.lesson_id)"
             );
@@ -292,20 +324,20 @@ public class FitnessClub {
             listBookings.setString(2, status);
             ResultSet bookingResults = listBookings.executeQuery();
 
-            List<Integer> bookingIds = new ArrayList<>();
+            List<Integer> lessonIds = new ArrayList<>();
             int counter = 1;
             while (bookingResults.next()) {
-                int bookingId = bookingResults.getInt("id");
+                int lessonId = bookingResults.getInt("id");
                 String day = bookingResults.getString("lesson_day");
                 String time = bookingResults.getString("start_time");
                 String fitnessType = bookingResults.getString("fitness_type");
-                bookingIds.add(bookingId);
+                lessonIds.add(lessonId);
 
                 System.out.println(counter + ": " + day + ", " + time + ", " + fitnessType);
                 counter++;
             }
 
-            if (bookingIds.isEmpty()) {
+            if (lessonIds.isEmpty()) {
                 System.out.println("No bookings found or you have already written reviews for all attended lessons.");
                 return -1;
             }
@@ -313,11 +345,11 @@ public class FitnessClub {
             System.out.print("Enter the number: ");
             int selectedIndex = scanner.nextInt() - 1;
             scanner.nextLine();
-            if (selectedIndex < 0 || selectedIndex > (bookingIds.size() - 1)) {
+            if (selectedIndex < 0 || selectedIndex > (lessonIds.size() - 1)) {
                 System.out.println("Invalid choice.");
                 return -1;
             }
-            return bookingIds.get(selectedIndex);
+            return lessonIds.get(selectedIndex);
 
         } catch (SQLException e) {
             e.printStackTrace();
@@ -560,7 +592,7 @@ public class FitnessClub {
 
             String currentMonth = LocalDate.now().getMonth().name();
 
-            PreparedStatement writeReview = connection.prepareStatement("INSERT INTO reviews (customer_id, lesson_id, rating, review, booking_month) VALUES (?, ?, ?, ?, ?)");
+            PreparedStatement writeReview = connection.prepareStatement("INSERT INTO reviews (customer_id, lesson_id, rating, review_text, booking_month) VALUES (?, ?, ?, ?, ?)");
             writeReview.setInt(1, customerId);
             writeReview.setInt(2, lessonId);
             writeReview.setInt(3, rating);
