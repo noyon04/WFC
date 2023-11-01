@@ -9,4 +9,4 @@ database. The project's design, implementation, and testing processes are covere
 paper, which demonstrates the project's applicability and efficiency in streamlining the booking 
 process for fitness classes. The WFC project significantly improves the overall user experience 
 by addressing the need for a more convenient and organized system and paves the way for 
-further developments in the management of fitness clubs
+further developments in the management of fitness clubs.
